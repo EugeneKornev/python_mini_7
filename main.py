@@ -1,21 +1,15 @@
 from sys import stderr
+from functools import wraps
 
 
 def deprecated(function=None, *, since=None, will_be_removed=None):
     def wrapper(func):
+        @wraps(func)
         def inner(*args, **kwargs):
             name = func.__name__
-            if since and will_be_removed:
-                stderr.write(
-                    f"Warning: function {name} is deprecated since version {since}. It will be removed in version {will_be_removed}\n")
-            elif since:
-                stderr.write(
-                    f"Warning: function {name} is deprecated since version {since}. It will be removed in future versions\n")
-            elif will_be_removed:
-                stderr.write(
-                    f"Warning: function {name} is deprecated. It will be removed in version {will_be_removed}\n")
-            else:
-                stderr.write(f"Warning: function {name} is deprecated. It will be removed in future versions\n")
+            warning = (f"Warning: function {name} is deprecated{f' since {since}' if since else ''}. It will be "
+                       f"removed in {f'version {will_be_removed}' if will_be_removed else 'future versions'}\n")
+            stderr.write(warning)
             return func(*args, **kwargs)
 
         return inner
@@ -28,16 +22,19 @@ def deprecated(function=None, *, since=None, will_be_removed=None):
 
 @deprecated
 def foo():
+    "This is a foo() finction"
     print("Hello from foo")
 
 
 @deprecated(since="4.2.0", will_be_removed="5.0.1")
 def bar():
+    "And this is a bar() function"
     print("Hello from bar")
 
 
 @deprecated(since="1.5.2")
 def baz(x, y):
+    "It is a baz() function, that do ..."
     return 2 ** x + y
 
 
@@ -45,4 +42,6 @@ if __name__ == '__main__':
     foo()
     bar()
     print(baz(5, 3))
+    print(foo.__doc__)
+    print(bar.__name__)
 
